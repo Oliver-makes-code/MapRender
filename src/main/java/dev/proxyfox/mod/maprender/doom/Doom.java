@@ -45,20 +45,26 @@ public class Doom {
 	}
 
 	public void clipPoint(Point2d a, Point2d b) {
+		// Get angle
 		var r = Math.atan2(a.x,a.y);
+		// If it's within FOV, return
 		if (r <= Math.PI/6 && r >= -Math.PI/6) {
 			return;
 		}
+		// Get slope from line
 		var m1 = (a.y-b.y)/(a.x-b.x);
 		var b1 = a.y-m1*a.x;
+		// Get slope from angle
 		double m2;
 		if (r > Math.PI/6) {
 			m2 = Math.cos(Math.PI/6)/Math.sin(Math.PI/6);
 		} else {
 			m2 = Math.cos(-Math.PI/6)/Math.sin(-Math.PI/6);
 		}
+		// Calculate new x and y
 		var dx = -b1/(m1-m2);
 		var dy = m1*dx+b1;
+		// Set new x and y
 		a.x = (float) dx;
 		a.y = (float) dy;
 	}
