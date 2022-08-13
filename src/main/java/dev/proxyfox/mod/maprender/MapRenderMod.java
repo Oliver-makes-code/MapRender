@@ -1,5 +1,6 @@
 package dev.proxyfox.mod.maprender;
 
+import eu.pb4.polymer.api.block.PolymerBlockUtils;
 import eu.pb4.polymer.api.item.PolymerBlockItem;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -29,6 +30,7 @@ public class MapRenderMod implements ModInitializer {
 		Registry.register(Registry.BLOCK, id("block"), block);
 		Registry.register(Registry.ITEM, id("item"), item);
 		Registry.register(Registry.BLOCK_ENTITY_TYPE, id("entity"), entity);
+		PolymerBlockUtils.registerBlockEntity(entity);
 	}
 
 	public static Identifier id(String path) {
