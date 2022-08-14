@@ -105,36 +105,28 @@ public class Doom {
 			clampPoint(pb, pa, (float)-fov2);
 		}
 
-		xa = pa.x;
-		ya = pa.y;
-		xb = pb.x;
-		yb = pb.y;
-
-		if (ya < 1 && yb < 1) return;
-		if (ya < 1) {
+		if (pa.y < 1 && pb.y < 1) return;
+		if (pa.y < 1) {
 			if (a1 > fov2) {
 				clampPoint(pa, pb, (float)-fov2);
 			}
 			if (a1 < -fov2) {
 				clampPoint(pa, pb, (float)fov2);
 			}
-			xa = pa.x;
-			ya = pa.y;
-			xb = pb.x;
-			yb = pb.y;
 		}
-		if (yb < 1) {
+		if (pb.y < 1) {
 			if (a2 > fov2) {
 				clampPoint(pb, pa, (float)-fov2);
 			}
 			if (a2 < -fov2) {
 				clampPoint(pb, pa, (float)fov2);
 			}
-			xa = pa.x;
-			ya = pa.y;
-			xb = pb.x;
-			yb = pb.y;
 		}
+
+		xa = pa.x;
+		ya = pa.y;
+		xb = pb.x;
+		yb = pb.y;
 
 		// Get screen pos
 		int sxa = screenPos(xa, ya, width/2);
