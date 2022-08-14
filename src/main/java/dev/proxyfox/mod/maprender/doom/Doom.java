@@ -1,6 +1,9 @@
 package dev.proxyfox.mod.maprender.doom;
 
 import dev.proxyfox.mod.maprender.MapRenderBlockEntity;
+import dev.proxyfox.mod.maprender.doom.sector.Line;
+import dev.proxyfox.mod.maprender.doom.sector.Point2d;
+import dev.proxyfox.mod.maprender.doom.sector.Point3d;
 import eu.pb4.mapcanvas.api.core.CanvasColor;
 import eu.pb4.mapcanvas.api.core.PlayerCanvas;
 
@@ -13,6 +16,8 @@ public class Doom {
 	private float fovMultiplier = 128;
 	private int delta = 0;
 	private int borderWidth = 2;
+	private double fov = Math.PI/3;
+	private double fov2 = fov/2;
 
 	public Doom(MapRenderBlockEntity entity) {
 		this.entity = entity;
@@ -44,77 +49,100 @@ public class Doom {
 		activePlayer.turn(-0.01f);
 	}
 
-	public void clipPoint(Point2d a, Point2d b) {
-		// Get angle
-		var r = Math.atan2(a.x,a.y);
-		// If it's within FOV, return
-		if (r <= Math.PI/6 && r >= -Math.PI/6) {
-			return;
-		}
-		// Get slope from line
+	public void clampPoint(Point2d a, Point2d b, float t) {
+		// Get slope and intersect of line
 		var m1 = (a.y-b.y)/(a.x-b.x);
 		var b1 = a.y-m1*a.x;
-		// Get slope from angle
-		double m2;
-		if (r > Math.PI/6) {
-			m2 = Math.cos(Math.PI/6)/Math.sin(Math.PI/6);
-		} else {
-			m2 = Math.cos(-Math.PI/6)/Math.sin(-Math.PI/6);
-		}
-		// Calculate new x and y
-		var dx = -b1/(m1-m2);
-		var dy = m1*dx+b1;
-		// Set new x and y
-		a.x = (float) dx;
-		a.y = (float) dy;
+		// Get slope of angle
+		var m2 = Math.tan(Math.PI/2-t);
+		if (Double.isNaN(m2)) m2 = Double.MAX_VALUE;
+		// Get intersection
+		a.x = (float) (-b1/(m1-m2));
+		a.y = m1*a.x+b1;
 	}
 
-	public void drawQuad(Point3d a, Point3d b) {
+	public void drawLine(Line l) {
 		float asin = (float) Math.sin(activePlayer.rot);
 		float acos = (float) Math.cos(activePlayer.rot);
 
 		// Move points
-		float xa1 = a.x - activePlayer.x;
+		float xa1 = l.x1 - activePlayer.x;
+		float xb1 = l.x2 - activePlayer.x;
 		float xa;
-		float xb1 = b.x - activePlayer.x;
 		float xb;
-		float ya = a.y - activePlayer.y;
-		float yb = b.y - activePlayer.y;
-		float yc;
-		float yd;
-		float za = a.z - activePlayer.z;
-		float zb = a.z - activePlayer.z;
-		float zc = b.z - activePlayer.z;
-		float zd = b.z - activePlayer.z;
+		float ya = l.y1 - activePlayer.y;
+		float yb = l.y2 - activePlayer.y;
+		float za = l.z1 - activePlayer.z;
+		float zb = l.z2 - activePlayer.z;
 
 		// Rotate points
 		xa = xa1 * acos - ya * asin;
 		xb = xb1 * acos - yb * asin;
 		ya = ya * acos + xa1 * asin;
 		yb = yb * acos + xb1 * asin;
-		yc = ya;
-		yd = yb;
 
-		// Clip points
-		var p2a = new Point2d(xa,ya);
-		var p2b = new Point2d(xb,yb);
-		clipPoint(p2a, p2b);
-		clipPoint(p2b, p2a);
-
-		xa = p2a.x;
-		ya = p2a.y;
-		xb = p2b.x;
-		yb = p2b.y;
+		// Clamp lines to screen area
 
 		if (ya < 1 && yb < 1) return;
+		var a1 = Math.atan2(xa, ya);
+		var a2 = Math.atan2(xb, yb);
+		if (a1 > fov2 && a2 > fov2) return;
+		if (a1 < -fov2 && a2 < -fov2) return;
+
+		var pa = new Point2d(xa, ya);
+		var pb = new Point2d(xb, yb);
+
+		if (a1 > fov2) {
+			clampPoint(pa, pb, (float)fov2);
+		}
+		if (a1 < -fov2) {
+			clampPoint(pa, pb, (float)-fov2);
+		}
+		if (a2 > fov2) {
+			clampPoint(pb, pa, (float)fov2);
+		}
+		if (a2 < -fov2) {
+			clampPoint(pb, pa, (float)-fov2);
+		}
+
+		xa = pa.x;
+		ya = pa.y;
+		xb = pb.x;
+		yb = pb.y;
+
+		if (ya < 1 && yb < 1) return;
+		if (ya < 1) {
+			if (a1 > fov2) {
+				clampPoint(pa, pb, (float)-fov2);
+			}
+			if (a1 < -fov2) {
+				clampPoint(pa, pb, (float)fov2);
+			}
+			xa = pa.x;
+			ya = pa.y;
+			xb = pb.x;
+			yb = pb.y;
+		}
+		if (yb < 1) {
+			if (a2 > fov2) {
+				clampPoint(pb, pa, (float)-fov2);
+			}
+			if (a2 < -fov2) {
+				clampPoint(pb, pa, (float)fov2);
+			}
+			xa = pa.x;
+			ya = pa.y;
+			xb = pb.x;
+			yb = pb.y;
+		}
 
 		// Get screen pos
 		int sxa = screenPos(xa, ya, width/2);
 		int sxb = screenPos(xb, yb, width/2);
 		int sya = screenPos(za, ya, height/2);
-		int syb = screenPos(zb, yb, height/2);
-		int syc = screenPos(zc, yc, height/2);
-		int syd = screenPos(zd, yd, height/2);
+		int syb = screenPos(za, yb, height/2);
+		int syc = screenPos(zb, ya, height/2);
+		int syd = screenPos(zb, yb, height/2);
 
 		// Get smaller values
 		int smxa, smxb, smya, smyb, smyc, smyd;
@@ -190,7 +218,7 @@ public class Doom {
 
 			// Loop through column
 			for (int py = spya; py < spyb; py++) {
-				point(px,py, CanvasColor.RED_NORMAL);
+				point(px,py, l.color);
 			}
 		}
 	}
@@ -212,7 +240,7 @@ public class Doom {
 
 		delta++;
 
-		drawQuad(new Point3d(40F, 10F, 0F), new Point3d(40F,40F,5F));
+		drawLine(new Line(20, -50, 0, -20, 40, 5, CanvasColor.RED_NORMAL));
 
 		// endregion
 

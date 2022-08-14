@@ -1,4 +1,4 @@
-package dev.proxyfox.mod.maprender.doom;
+package dev.proxyfox.mod.maprender.doom.sector;
 
 public class Point2d {
 	public float x;
