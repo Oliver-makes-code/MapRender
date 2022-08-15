@@ -2,13 +2,13 @@ package dev.proxyfox.mod.maprender.doom;
 
 public class Player {
 	public float x = 0;
-	public float y = 0;
-	public float z = 2.5F;
+	public float y = -40;
+	public float z = 0;
 	public float rot = 0;
 
 	public void moveForward(float amount) {
-		float dx = (float)Math.cos(rot) * amount;
-		float dy = (float)Math.sin(rot) * amount;
+		float dx = (float)Math.sin(rot) * amount;
+		float dy = (float)Math.cos(rot) * amount;
 		x += dx;
 		y += dy;
 	}

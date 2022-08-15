@@ -5,8 +5,10 @@ import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
+import net.minecraft.network.packet.s2c.play.EntitiesDestroyS2CPacket;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.DirectionProperty;
@@ -55,8 +57,13 @@ public class MapRenderBlock extends BlockWithEntity implements PolymerBlock {
 	@Override
 	public void onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
 		if (world instanceof ServerWorld serverWorld) {
-			((MapRenderBlockEntity) Objects.requireNonNull(serverWorld.getBlockEntity(pos))).display.destroy();
-			((MapRenderBlockEntity) Objects.requireNonNull(serverWorld.getBlockEntity(pos))).canvas.destroy();
+			var entity = ((MapRenderBlockEntity) Objects.requireNonNull(serverWorld.getBlockEntity(pos)));
+			entity.display.destroy();
+			entity.canvas.destroy();
+			for (var _player : entity.players) {
+				_player.networkHandler.sendPacket(new EntitiesDestroyS2CPacket(entity.fakeEntity.getId()));
+			}
+			entity.fakeEntity.remove(Entity.RemovalReason.DISCARDED);
 		}
 		super.onBreak(world, pos, state, player);
 	}

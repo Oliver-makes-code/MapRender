@@ -1,11 +1,16 @@
 package dev.proxyfox.mod.maprender;
 
 import eu.pb4.polymer.api.block.PolymerBlockUtils;
+import eu.pb4.polymer.api.entity.PolymerEntityUtils;
 import eu.pb4.polymer.api.item.PolymerBlockItem;
+import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.util.Identifier;
@@ -23,14 +28,17 @@ public class MapRenderMod implements ModInitializer {
 	public static final Logger LOGGER = LoggerFactory.getLogger("Map Render");
 	public static final MapRenderBlock block = new MapRenderBlock(QuiltBlockSettings.copyOf(Blocks.BEDROCK));
 	public static final Item item = new PolymerBlockItem(block, new QuiltItemSettings(), Items.MAP);
-	public static final BlockEntityType<MapRenderBlockEntity> entity = QuiltBlockEntityTypeBuilder.create(MapRenderBlockEntity::new, block).build();
+	public static final BlockEntityType<MapRenderBlockEntity> blockEntity = QuiltBlockEntityTypeBuilder.create(MapRenderBlockEntity::new, block).build();
+	public static final EntityType<Entity> entity = FabricEntityTypeBuilder.create().entityFactory(MapRenderEntity::new).disableSaving().disableSummon().fireImmune().build();
 
 	@Override
 	public void onInitialize(ModContainer mod) {
 		Registry.register(Registry.BLOCK, id("block"), block);
 		Registry.register(Registry.ITEM, id("item"), item);
-		Registry.register(Registry.BLOCK_ENTITY_TYPE, id("entity"), entity);
-		PolymerBlockUtils.registerBlockEntity(entity);
+		Registry.register(Registry.BLOCK_ENTITY_TYPE, id("block_entity"), blockEntity);
+		Registry.register(Registry.ENTITY_TYPE, id("entity"), entity);
+		PolymerBlockUtils.registerBlockEntity(blockEntity);
+		PolymerEntityUtils.registerType(entity);
 	}
 
 	public static Identifier id(String path) {
