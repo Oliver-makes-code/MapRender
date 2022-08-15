@@ -13,7 +13,8 @@
 			"contact": {
 				"issues": "https://github.com/Oliver-makes-code/MapRender/issues",
 				"sources": "https://github.com/Oliver-makes-code/MapRender"
-			}
+			},
+			"icon": "assets/maprender/icon.png"
 		},
 		"intermediate_mappings": "net.fabricmc:intermediary",
 		"entrypoints": {
