@@ -492,7 +492,7 @@ public class Doom {
 
 		// endregion
 
-		drawMarquee();
+		//drawMarquee();
 
 		markDirty();
 	}
