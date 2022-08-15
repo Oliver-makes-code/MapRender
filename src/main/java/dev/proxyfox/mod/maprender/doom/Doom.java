@@ -316,15 +316,22 @@ public class Doom {
 
 		// Clamp lines to screen area
 
+		// If the line is behind the camera don't bother rendering
 		if (ya < 1 && yb < 1) return;
+
+		// Get the angles of the ends of the line
 		var a1 = Math.atan2(xa, ya);
 		var a2 = Math.atan2(xb, yb);
+
+		// If both are outside the fov don't bother drawing
 		if (a1 > fov2 && a2 > fov2) return;
 		if (a1 < -fov2 && a2 < -fov2) return;
 
+		// Create writable point to not worry about returning mutliple variables
 		var pa = new Point2d(xa, ya);
 		var pb = new Point2d(xb, yb);
 
+		// Clamp points outside the fov to inside the fov
 		if (a1 > fov2) {
 			clampPoint(pa, pb, (float)fov2);
 		}
@@ -338,7 +345,10 @@ public class Doom {
 			clampPoint(pb, pa, (float)-fov2);
 		}
 
+		// Check if both points are behind the camera again
 		if (pa.y < 1 && pb.y < 1) return;
+		
+		// If one point is behind the camera, clamp it to the oppisite end of the fov
 		if (pa.y < 1) {
 			if (a1 > fov2) {
 				clampPoint(pa, pb, (float)-fov2);
@@ -356,6 +366,7 @@ public class Doom {
 			}
 		}
 
+		// Write to the variables
 		xa = pa.x;
 		ya = pa.y;
 		xb = pb.x;
