@@ -23,6 +23,7 @@ public class Doom {
 	private static final int borderWidth = 0;
 	private static final double fov = Math.PI/3;
 	private static final double fov2 = fov/2;
+	public boolean debug;
 	private static final Pair<Integer, Integer>[] points = new Pair[] {
 			// Row 1
 			new Pair(2,0),
@@ -161,10 +162,14 @@ public class Doom {
 				if (j < 128 - height) {
 					canvas.set(i, j, CanvasColor.WHITE_HIGH);
 				} else {
-					if (j < height/2 + 128 - height) {
-						canvas.set(i, j, CanvasColor.GREEN_LOWEST);
+					if (!debug) {
+						if (j < height / 2 + 128 - height) {
+							canvas.set(i, j, CanvasColor.GREEN_LOWEST);
+						} else {
+							canvas.set(i, j, CanvasColor.CYAN_HIGH);
+						}
 					} else {
-						canvas.set(i,j, CanvasColor.CYAN_HIGH);
+						canvas.set(i,j, CanvasColor.BLACK_LOWEST);
 					}
 				}
 			}
@@ -253,7 +258,7 @@ public class Doom {
 		}
 	}
 
-	public void sortLines(Pair<Sector, Line>... lines) {
+	public void sortLines(Pair<Sector, Line>[] lines) {
 		// Quick and dirty bubble sort
 		for (int s1 = 0; s1 < lines.length-1; s1++) {
 			for (int s2 = 0; s2 < lines.length-s1-1; s2++) {
@@ -307,9 +312,11 @@ public class Doom {
 		ya = ya * acos + xa1 * asin;
 		yb = yb * acos + xb1 * asin;
 
-//		point((int) xa/5+width/2, (int) ya/5+height/2, CanvasColor.RED_NORMAL);
-//		point((int) xb/5+width/2, (int) yb/5+height/2, CanvasColor.RED_NORMAL);
-//		point(width/2, height/2, CanvasColor.GREEN_NORMAL);
+		if (debug) {
+			point((int) xa/2+width/2, (int) ya/2+height/2, CanvasColor.RED_NORMAL);
+			point((int) xb/2+width/2, (int) yb/2+height/2, CanvasColor.RED_NORMAL);
+			point(width/2, height/2, CanvasColor.GREEN_NORMAL);
+		}
 
 		// Clamp lines to screen area
 
@@ -372,9 +379,12 @@ public class Doom {
 		s.dist += dist(0,0,(xa+xb)/2,(ya+yb)/2);
 		l.dist = dist(0,0,(xa+xb)/2,(ya+yb)/2);
 
-//		point((int) xa/5+width/2, (int) ya/5+height/2, CanvasColor.BLUE_NORMAL);
-//		point((int) xb/5+width/2, (int) yb/5+height/2, CanvasColor.BLUE_NORMAL);
-//		point(width/2, height/2, CanvasColor.GREEN_NORMAL);
+		if (debug) {
+			point((int) xa/2+width/2, (int) ya/2+height/2, CanvasColor.BLUE_NORMAL);
+			point((int) xb/2+width/2, (int) yb/2+height/2, CanvasColor.BLUE_NORMAL);
+			point(width/2, height/2, CanvasColor.GREEN_NORMAL);
+			return;
+		}
 
 		// Get screen pos
 		int sxa = screenPos(xa, ya, width/2);

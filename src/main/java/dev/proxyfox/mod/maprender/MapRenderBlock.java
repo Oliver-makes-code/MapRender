@@ -15,6 +15,8 @@ import net.minecraft.state.StateManager;
 import net.minecraft.state.property.DirectionProperty;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldAccess;
+import net.minecraft.world.chunk.WorldChunk;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
@@ -53,19 +55,5 @@ public class MapRenderBlock extends BlockWithEntity implements PolymerBlock {
 	@Override
 	public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
 		return (world2, pos, state2, entity) -> ((MapRenderBlockEntity)entity).tick(world2, pos, state2);
-	}
-
-	@Override
-	public void onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
-		if (world instanceof ServerWorld serverWorld) {
-			var entity = ((MapRenderBlockEntity) Objects.requireNonNull(serverWorld.getBlockEntity(pos)));
-			entity.display.destroy();
-			MapIdManager.freeMapId(entity.canvas.getId());
-			for (var p : entity.players) {
-				entity.canvas.removePlayer(p);
-			}
-			entity.fakeEntity.remove(Entity.RemovalReason.DISCARDED);
-		}
-		super.onBreak(world, pos, state, player);
 	}
 }

@@ -6,12 +6,14 @@ import eu.pb4.mapcanvas.api.core.CombinedPlayerCanvas;
 import eu.pb4.mapcanvas.api.core.DrawableCanvas;
 import eu.pb4.mapcanvas.api.core.PlayerCanvas;
 import eu.pb4.mapcanvas.api.utils.VirtualDisplay;
+import eu.pb4.mapcanvas.impl.MapIdManager;
 import eu.pb4.polymer.api.entity.PolymerEntityUtils;
 import eu.pb4.polymer.impl.other.FakeWorld;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.MapColor;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.vehicle.MinecartEntity;
@@ -51,6 +53,16 @@ public class MapRenderBlockEntity extends BlockEntity {
 	}
 
 	public Set<ServerPlayerEntity> players = new HashSet<>();
+
+	@Override
+	public void markRemoved() {
+		super.markRemoved();
+		display.destroy();
+		MapIdManager.freeMapId(canvas.getId());
+		for (var p : players)
+			canvas.removePlayer(p);
+		fakeEntity.remove(Entity.RemovalReason.DISCARDED);
+	}
 
 	public void tick(World world, BlockPos pos, BlockState state) {
 		if (!(world instanceof ServerWorld serverWorld)) return;

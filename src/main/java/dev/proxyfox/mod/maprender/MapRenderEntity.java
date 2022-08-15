@@ -1,6 +1,7 @@
 package dev.proxyfox.mod.maprender;
 
 import eu.pb4.polymer.api.entity.PolymerEntity;
+import eu.pb4.sgui.api.gui.HotbarGui;
 import io.netty.buffer.Unpooled;
 import net.minecraft.entity.*;
 import net.minecraft.entity.attribute.EntityAttribute;
@@ -24,6 +25,8 @@ import java.util.ArrayList;
 
 public class MapRenderEntity extends Entity implements PolymerEntity {
 	public MapRenderBlockEntity be;
+	public HotbarGui hotbarGui;
+
 	public MapRenderEntity(EntityType<?> entityType, World world) {
 		super(entityType, world);
 		this.setRotation(0,0);
@@ -37,8 +40,19 @@ public class MapRenderEntity extends Entity implements PolymerEntity {
 	@Override
 	public ActionResult interact(PlayerEntity player, Hand hand) {
 		if (this.hasPassengers()) return super.interact(player, hand);
+		if (!(player instanceof ServerPlayerEntity serverPlayer)) return super.interact(player,hand);
 		player.startRiding(this);
+		hotbarGui = new MapRenderGui(serverPlayer);
+		hotbarGui.open();
 		return ActionResult.SUCCESS;
+	}
+
+	@Override
+	protected void removePassenger(Entity passenger) {
+		super.removePassenger(passenger);
+		if (hotbarGui != null && hotbarGui.getPlayer() == passenger) {
+			hotbarGui.close();
+		}
 	}
 
 	@Override
