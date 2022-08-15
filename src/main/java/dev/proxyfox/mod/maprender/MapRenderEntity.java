@@ -26,10 +26,7 @@ public class MapRenderEntity extends Entity implements PolymerEntity {
 	public MapRenderBlockEntity be;
 	public MapRenderEntity(EntityType<?> entityType, World world) {
 		super(entityType, world);
-	}
-	public MapRenderEntity(World world, MapRenderBlockEntity be) {
-		this(MapRenderMod.entity, world);
-		this.be = be;
+		this.setRotation(0,0);
 	}
 
 	@Override

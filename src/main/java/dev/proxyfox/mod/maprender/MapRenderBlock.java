@@ -1,5 +1,6 @@
 package dev.proxyfox.mod.maprender;
 
+import eu.pb4.mapcanvas.impl.MapIdManager;
 import eu.pb4.polymer.api.block.PolymerBlock;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
@@ -59,9 +60,9 @@ public class MapRenderBlock extends BlockWithEntity implements PolymerBlock {
 		if (world instanceof ServerWorld serverWorld) {
 			var entity = ((MapRenderBlockEntity) Objects.requireNonNull(serverWorld.getBlockEntity(pos)));
 			entity.display.destroy();
-			entity.canvas.destroy();
-			for (var _player : entity.players) {
-				_player.networkHandler.sendPacket(new EntitiesDestroyS2CPacket(entity.fakeEntity.getId()));
+			MapIdManager.freeMapId(entity.canvas.getId());
+			for (var p : entity.players) {
+				entity.canvas.removePlayer(p);
 			}
 			entity.fakeEntity.remove(Entity.RemovalReason.DISCARDED);
 		}

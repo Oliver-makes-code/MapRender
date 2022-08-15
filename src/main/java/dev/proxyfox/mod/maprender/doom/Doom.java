@@ -311,9 +311,6 @@ public class Doom {
 //		point((int) xb/5+width/2, (int) yb/5+height/2, CanvasColor.RED_NORMAL);
 //		point(width/2, height/2, CanvasColor.GREEN_NORMAL);
 
-		s.dist += dist(0,0,(xa+xb)/2,(ya+yb)/2);
-		l.dist = dist(0,0,(xa+xb)/2,(ya+yb)/2);
-
 		// Clamp lines to screen area
 
 		// If the line is behind the camera don't bother rendering
@@ -347,7 +344,7 @@ public class Doom {
 
 		// Check if both points are behind the camera again
 		if (pa.y < 1 && pb.y < 1) return;
-		
+
 		// If one point is behind the camera, clamp it to the oppisite end of the fov
 		if (pa.y < 1) {
 			if (a1 > fov2) {
@@ -371,6 +368,9 @@ public class Doom {
 		ya = pa.y;
 		xb = pb.x;
 		yb = pb.y;
+
+		s.dist += dist(0,0,(xa+xb)/2,(ya+yb)/2);
+		l.dist = dist(0,0,(xa+xb)/2,(ya+yb)/2);
 
 //		point((int) xa/5+width/2, (int) ya/5+height/2, CanvasColor.BLUE_NORMAL);
 //		point((int) xb/5+width/2, (int) yb/5+height/2, CanvasColor.BLUE_NORMAL);

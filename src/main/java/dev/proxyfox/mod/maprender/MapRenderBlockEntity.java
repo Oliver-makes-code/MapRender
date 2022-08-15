@@ -13,7 +13,9 @@ import net.minecraft.block.MapColor;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.vehicle.MinecartEntity;
+import net.minecraft.item.SpawnEggItem;
 import net.minecraft.network.packet.s2c.play.EntitiesDestroyS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -29,7 +31,6 @@ public class MapRenderBlockEntity extends BlockEntity {
 	public final VirtualDisplay display;
 	public final Doom doom;
 	public MapRenderEntity fakeEntity;
-	public MinecartEntity alias;
 
 	public MapRenderBlockEntity(BlockEntityType<?> blockEntityType, BlockPos blockPos, BlockState blockState) {
 		super(blockEntityType, blockPos, blockState);
@@ -40,6 +41,7 @@ public class MapRenderBlockEntity extends BlockEntity {
 				.pos(blockPos.offset(dir))
 				.direction(blockState.get(MapRenderBlock.property))
 				.rotation(BlockRotation.CLOCKWISE_180)
+				.invisible(true)
 				.build();
 		doom = new Doom(this);
 	}
@@ -51,35 +53,24 @@ public class MapRenderBlockEntity extends BlockEntity {
 	public Set<ServerPlayerEntity> players = new HashSet<>();
 
 	public void tick(World world, BlockPos pos, BlockState state) {
+		if (!(world instanceof ServerWorld serverWorld)) return;
 		if (fakeEntity == null) {
-			fakeEntity = new MapRenderEntity(world, this);
-			alias = new MinecartEntity(EntityType.MINECART, world);
-			alias.setNoGravity(true);
-			alias.setId(fakeEntity.getId());
-			fakeEntity.setNoGravity(true);
-			world.spawnEntity(fakeEntity);
+			var dir = world.getBlockState(pos).get(MapRenderBlock.property);
+			fakeEntity = (MapRenderEntity) MapRenderMod.entity.spawn(serverWorld, null, null, null, pos.down().offset(dir,2), SpawnReason.TRIGGERED, false, false);
+			fakeEntity.be = this;
 		}
-		var dir = world.getBlockState(pos).get(MapRenderBlock.property);
-		BlockPos entityPos = this.pos.down().offset(dir, 2);
-		double x = entityPos.getX() + 0.5;
-		double z = entityPos.getZ() + 0.5;
-		fakeEntity.updatePosition(x, entityPos.getY(), z);
-		if (world instanceof ServerWorld serverWorld) {
-			for (ServerPlayerEntity player : serverWorld.getPlayers()) {
-				if (Math.sqrt(player.squaredDistanceTo(pos.getX(), pos.getY(), pos.getZ())) < 25) {
-					if (!players.contains(player)) {
-						players.add(player);
-						display.addPlayer(player);
-						canvas.addPlayer(player);
-						player.networkHandler.sendPacket(fakeEntity.createSpawnPacket());
-					}
-				} else {
-					if (players.contains(player)) {
-						players.remove(player);
-						display.removePlayer(player);
-						canvas.removePlayer(player);
-						player.networkHandler.sendPacket(new EntitiesDestroyS2CPacket(fakeEntity.getId()));
-					}
+		for (ServerPlayerEntity player : serverWorld.getPlayers()) {
+			if (Math.sqrt(player.squaredDistanceTo(pos.getX(), pos.getY(), pos.getZ())) < 25) {
+				if (!players.contains(player)) {
+					players.add(player);
+					display.addPlayer(player);
+					canvas.addPlayer(player);
+				}
+			} else {
+				if (players.contains(player)) {
+					players.remove(player);
+					display.removePlayer(player);
+					canvas.removePlayer(player);
 				}
 			}
 		}

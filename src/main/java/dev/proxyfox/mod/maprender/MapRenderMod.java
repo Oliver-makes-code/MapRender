@@ -29,7 +29,7 @@ public class MapRenderMod implements ModInitializer {
 	public static final MapRenderBlock block = new MapRenderBlock(QuiltBlockSettings.copyOf(Blocks.BEDROCK));
 	public static final Item item = new PolymerBlockItem(block, new QuiltItemSettings(), Items.MAP);
 	public static final BlockEntityType<MapRenderBlockEntity> blockEntity = QuiltBlockEntityTypeBuilder.create(MapRenderBlockEntity::new, block).build();
-	public static final EntityType<Entity> entity = FabricEntityTypeBuilder.create().entityFactory(MapRenderEntity::new).disableSaving().disableSummon().fireImmune().build();
+	public static final EntityType<MapRenderEntity> entity = FabricEntityTypeBuilder.create().entityFactory(MapRenderEntity::new).disableSaving().disableSummon().fireImmune().build();
 
 	@Override
 	public void onInitialize(ModContainer mod) {
